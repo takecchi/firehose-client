@@ -1,7 +1,5 @@
 import WebSocket from 'ws';
 import { AtpBaseClient, ComAtprotoSyncSubscribeRepos } from '@atproto/api';
-import { DidResolver } from '@atproto/identity';
-import { cborDecode, cborDecodeMulti } from '@atproto/common';
 import {
   Frame,
   IAppBskyFeedLike,
@@ -14,6 +12,7 @@ import {
 } from './types';
 import { EventEmitter } from 'events';
 import { CarReader } from '@ipld/car';
+import { cborDecode, cborDecodeMulti } from './utils';
 
 const NSID = 'com.atproto.sync.subscribeRepos';
 const isCommit = ComAtprotoSyncSubscribeRepos.isCommit;
@@ -26,7 +25,6 @@ type FirehoseClientOptions = {
 export class FirehoseClient extends EventEmitter {
   private ws?: WebSocket;
   private baseClient = new AtpBaseClient();
-  private didResolver = new DidResolver({});
 
   constructor(
     private options: FirehoseClientOptions = { host: 'bsky.network' },
