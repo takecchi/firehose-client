@@ -11,12 +11,10 @@ jobs:
       packages: write
       contents: read
     steps:
-      - uses: actions/checkout@v4
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 18
-          registry-url: https://npm.pkg.github.com
 
       - name: Update package.json version
         uses: jossef/action-set-json-field@v1
