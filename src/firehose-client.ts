@@ -13,6 +13,7 @@ import {
 import { EventEmitter } from 'events';
 import { CarReader } from '@ipld/car';
 import { cborDecode, cborDecodeMulti } from './utils';
+import { CID } from 'multiformats/cid';
 
 const NSID = 'com.atproto.sync.subscribeRepos';
 const isCommit = ComAtprotoSyncSubscribeRepos.isCommit;
@@ -145,12 +146,26 @@ export class FirehoseClient extends EventEmitter {
           const block = await cr.get(op.cid);
           if (block) {
             const payload = cborDecode(block.bytes);
+            // CIDを追加
+            (payload as { cid: CID }).cid = op.cid;
             if (isAppBskyFeedPost(payload)) {
-              this.emit('create:AppBskyFeedPost', arg, payload);
+              this.emit(
+                'create:AppBskyFeedPost',
+                arg,
+                payload as IAppBskyFeedPost,
+              );
             } else if (isAppBskyFeedRepost(payload)) {
-              this.emit('create:AppBskyFeedRepost', arg, payload);
+              this.emit(
+                'create:AppBskyFeedRepost',
+                arg,
+                payload as IAppBskyFeedRepost,
+              );
             } else if (isAppBskyFeedLike(payload)) {
-              this.emit('create:AppBskyFeedLike', arg, payload);
+              this.emit(
+                'create:AppBskyFeedLike',
+                arg,
+                payload as IAppBskyFeedLike,
+              );
             } else {
               // TODO 他の型の処理をどうするか
               // console.debug('Not supported payload type:', payload);
