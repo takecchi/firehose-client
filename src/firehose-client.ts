@@ -34,15 +34,20 @@ export class FirehoseClient extends EventEmitter {
 
   public connect() {
     this.ws = new WebSocket(`wss://${this.options.host}/xrpc/${NSID}`);
-    this.ws.onmessage = (event: MessageEvent) =>
-      void this.handleMessage(event.data as WebSocket.RawData);
-    this.ws.onerror = (event: ErrorEvent) =>
-      this.handleError(event.error as Error);
-    this.ws.onclose = (event: CloseEvent) =>
+    this.ws.addEventListener(
+      'message',
+      (event: MessageEvent) =>
+        void this.handleMessage(event.data as WebSocket.RawData),
+    );
+    this.ws.addEventListener('error', (event: ErrorEvent) =>
+      this.handleError(event.error as Error),
+    );
+    this.ws.addEventListener('close', (event: CloseEvent) =>
       this.handleClose(
         event.code as unknown as number,
         event.reason as unknown as string,
-      );
+      ),
+    );
   }
 
   public close() {
