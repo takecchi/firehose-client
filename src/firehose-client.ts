@@ -34,9 +34,15 @@ export class FirehoseClient extends EventEmitter {
 
   public connect() {
     this.ws = new WebSocket(`wss://${this.options.host}/xrpc/${NSID}`);
-    this.ws.on('message', (data) => void this.handleMessage(data));
-    this.ws.on('error', (err) => this.handleError(err));
-    this.ws.on('close', (code, reason) => this.handleClose(code, reason));
+    this.ws.onmessage = (event: MessageEvent) =>
+      void this.handleMessage(event.data as WebSocket.RawData);
+    this.ws.onerror = (event: ErrorEvent) =>
+      this.handleError(event.error as Error);
+    this.ws.onclose = (event: CloseEvent) =>
+      this.handleClose(
+        event.code as unknown as number,
+        event.reason as unknown as string,
+      );
   }
 
   public close() {
@@ -100,7 +106,7 @@ export class FirehoseClient extends EventEmitter {
     this.close();
   }
 
-  private handleClose(code: number | undefined, reason: Buffer) {
+  private handleClose(code: number | undefined, reason: Buffer | string) {
     this.emit('close', code, reason);
     this.close();
   }
