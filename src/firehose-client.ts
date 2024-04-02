@@ -148,24 +148,13 @@ export class FirehoseClient extends EventEmitter {
             const payload = cborDecode(block.bytes);
             // CIDを追加
             (payload as { cid: CID }).cid = op.cid;
+            (payload as { uri: string }).uri = `at://${arg.repo}/${op.path}`;
             if (isAppBskyFeedPost(payload)) {
-              this.emit(
-                'create:AppBskyFeedPost',
-                arg,
-                payload as IAppBskyFeedPost,
-              );
+              this.emit('create:AppBskyFeedPost', arg, payload);
             } else if (isAppBskyFeedRepost(payload)) {
-              this.emit(
-                'create:AppBskyFeedRepost',
-                arg,
-                payload as IAppBskyFeedRepost,
-              );
+              this.emit('create:AppBskyFeedRepost', arg, payload);
             } else if (isAppBskyFeedLike(payload)) {
-              this.emit(
-                'create:AppBskyFeedLike',
-                arg,
-                payload as IAppBskyFeedLike,
-              );
+              this.emit('create:AppBskyFeedLike', arg, payload);
             } else {
               // TODO 他の型の処理をどうするか
               // console.debug('Not supported payload type:', payload);

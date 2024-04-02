@@ -20,16 +20,19 @@ export interface ICommit {
 
 export interface IAppBskyFeedPost extends AppBskyFeedPost.Record {
   cid: CID;
+  uri: string;
   via?: string;
 }
 
 export interface IAppBskyFeedRepost extends AppBskyFeedRepost.Record {
   cid: CID;
+  uri: string;
   via?: string;
 }
 
 export interface IAppBskyFeedLike extends AppBskyFeedLike.Record {
   cid: CID;
+  uri: string;
   via?: string;
 }
 
