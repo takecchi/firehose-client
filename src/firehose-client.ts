@@ -3,13 +3,19 @@ import { AtpBaseClient, ComAtprotoSyncSubscribeRepos } from '@atproto/api';
 import {
   Event,
   Frame,
+  IAppBskyActorProfile,
   IAppBskyFeedLike,
   IAppBskyFeedPost,
   IAppBskyFeedRepost,
+  IAppBskyFeedThreadgate,
+  IAppBskyGraphBlock,
   IAppBskyGraphFollow,
+  isAppBskyActorProfile,
   isAppBskyFeedLike,
   isAppBskyFeedPost,
   isAppBskyFeedRepost,
+  isAppBskyFeedThreadgate,
+  isAppBskyGraphBlock,
   isAppBskyGraphFollow,
 } from './types';
 import { EventEmitter } from 'events';
@@ -69,7 +75,7 @@ export class FirehoseClient extends EventEmitter {
    * @param listener
    */
   public on(
-    event: 'create:AppBskyFeedPost',
+    event: 'AppBskyFeedPost',
     listener: (post: Event<IAppBskyFeedPost>) => void,
   ): this;
 
@@ -79,7 +85,7 @@ export class FirehoseClient extends EventEmitter {
    * @param listener
    */
   public on(
-    event: 'create:AppBskyFeedRepost',
+    event: 'AppBskyFeedRepost',
     listener: (repost: Event<IAppBskyFeedRepost>) => void,
   ): this;
 
@@ -89,7 +95,7 @@ export class FirehoseClient extends EventEmitter {
    * @param listener
    */
   public on(
-    event: 'create:AppBskyFeedLike',
+    event: 'AppBskyFeedLike',
     listener: (like: Event<IAppBskyFeedLike>) => void,
   ): this;
 
@@ -99,8 +105,38 @@ export class FirehoseClient extends EventEmitter {
    * @param listener
    */
   public on(
-    event: 'create:AppBskyGraphFollow',
+    event: 'AppBskyGraphFollow',
     listener: (follow: Event<IAppBskyGraphFollow>) => void,
+  ): this;
+
+  /**
+   * ブロックイベント
+   * @param event
+   * @param listener
+   */
+  public on(
+    event: 'AppBskyGraphBlock',
+    listener: (block: Event<IAppBskyGraphBlock>) => void,
+  ): this;
+
+  /**
+   * プロフィールイベント
+   * @param event
+   * @param listener
+   */
+  public on(
+    event: 'AppBskyActorProfile',
+    listener: (profile: Event<IAppBskyActorProfile>) => void,
+  ): this;
+
+  /**
+   * スレッドゲートイベント
+   * @param event
+   * @param listener
+   */
+  public on(
+    event: 'AppBskyFeedThreadgate',
+    listener: (threadgate: Event<IAppBskyFeedThreadgate>) => void,
   ): this;
 
   public on(event: string | symbol, listener: (...args: any[]) => void): this {
@@ -163,16 +199,22 @@ export class FirehoseClient extends EventEmitter {
               value: payload,
             };
             if (isAppBskyFeedPost(payload)) {
-              this.emit('create:AppBskyFeedPost', feed);
+              this.emit('AppBskyFeedPost', feed);
             } else if (isAppBskyFeedRepost(payload)) {
-              this.emit('create:AppBskyFeedRepost', feed);
+              this.emit('AppBskyFeedRepost', feed);
             } else if (isAppBskyFeedLike(payload)) {
-              this.emit('create:AppBskyFeedLike', feed);
+              this.emit('AppBskyFeedLike', feed);
             } else if (isAppBskyGraphFollow(payload)) {
-              this.emit('create:AppBskyGraphFollow', feed);
+              this.emit('AppBskyGraphFollow', feed);
+            } else if (isAppBskyGraphBlock(payload)) {
+              this.emit('AppBskyGraphBlock', feed);
+            } else if (isAppBskyActorProfile(payload)) {
+              this.emit('AppBskyActorProfile', feed);
+            } else if (isAppBskyFeedThreadgate(payload)) {
+              this.emit('AppBskyFeedThreadgate', feed);
             } else {
               // TODO 他の型の処理をどうするか
-              // console.debug('Not supported payload type:', payload);
+              // console.debug('Not supported payload type:', feed);
             }
           }
         }
