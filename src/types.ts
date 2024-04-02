@@ -2,6 +2,7 @@ import {
   AppBskyFeedPost,
   AppBskyFeedRepost,
   AppBskyFeedLike,
+  AppBskyGraphFollow,
 } from '@atproto/api';
 
 enum FrameType {
@@ -12,7 +13,7 @@ enum FrameType {
 type FrameHeader = { t?: string; op: FrameType };
 export type Frame = [FrameHeader, object];
 
-export type Feed<T> = {
+export type Event<T> = {
   uri: string;
   cid: string;
   repo: string;
@@ -31,6 +32,10 @@ export interface IAppBskyFeedLike extends AppBskyFeedLike.Record {
   via?: string;
 }
 
+export interface IAppBskyGraphFollow extends AppBskyGraphFollow.Record {
+  via?: string;
+}
+
 export function isAppBskyFeedPost(v: unknown): v is IAppBskyFeedPost {
   return AppBskyFeedPost.isRecord(v);
 }
@@ -41,4 +46,8 @@ export function isAppBskyFeedRepost(v: unknown): v is IAppBskyFeedRepost {
 
 export function isAppBskyFeedLike(v: unknown): v is IAppBskyFeedLike {
   return AppBskyFeedLike.isRecord(v);
+}
+
+export function isAppBskyGraphFollow(v: unknown): v is IAppBskyGraphFollow {
+  return AppBskyGraphFollow.isRecord(v);
 }

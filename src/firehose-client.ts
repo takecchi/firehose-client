@@ -1,14 +1,16 @@
 import WebSocket from 'ws';
 import { AtpBaseClient, ComAtprotoSyncSubscribeRepos } from '@atproto/api';
 import {
-  Feed,
+  Event,
   Frame,
   IAppBskyFeedLike,
   IAppBskyFeedPost,
   IAppBskyFeedRepost,
+  IAppBskyGraphFollow,
   isAppBskyFeedLike,
   isAppBskyFeedPost,
   isAppBskyFeedRepost,
+  isAppBskyGraphFollow,
 } from './types';
 import { EventEmitter } from 'events';
 import { CarReader } from '@ipld/car';
@@ -68,7 +70,7 @@ export class FirehoseClient extends EventEmitter {
    */
   public on(
     event: 'create:AppBskyFeedPost',
-    listener: (post: Feed<IAppBskyFeedPost>) => void,
+    listener: (post: Event<IAppBskyFeedPost>) => void,
   ): this;
 
   /**
@@ -78,7 +80,7 @@ export class FirehoseClient extends EventEmitter {
    */
   public on(
     event: 'create:AppBskyFeedRepost',
-    listener: (repost: Feed<IAppBskyFeedRepost>) => void,
+    listener: (repost: Event<IAppBskyFeedRepost>) => void,
   ): this;
 
   /**
@@ -88,7 +90,17 @@ export class FirehoseClient extends EventEmitter {
    */
   public on(
     event: 'create:AppBskyFeedLike',
-    listener: (like: Feed<IAppBskyFeedLike>) => void,
+    listener: (like: Event<IAppBskyFeedLike>) => void,
+  ): this;
+
+  /**
+   * フォローイベント
+   * @param event
+   * @param listener
+   */
+  public on(
+    event: 'create:AppBskyGraphFollow',
+    listener: (follow: Event<IAppBskyGraphFollow>) => void,
   ): this;
 
   public on(event: string | symbol, listener: (...args: any[]) => void): this {
@@ -144,7 +156,7 @@ export class FirehoseClient extends EventEmitter {
           const block = await cr.get(op.cid);
           if (block) {
             const payload = cborDecode(block.bytes);
-            const feed: Feed<any> = {
+            const feed: Event<any> = {
               cid: op.cid.toString(),
               uri: `at://${commit.repo}/${op.path}`,
               repo: commit.repo,
@@ -156,6 +168,8 @@ export class FirehoseClient extends EventEmitter {
               this.emit('create:AppBskyFeedRepost', feed);
             } else if (isAppBskyFeedLike(payload)) {
               this.emit('create:AppBskyFeedLike', feed);
+            } else if (isAppBskyGraphFollow(payload)) {
+              this.emit('create:AppBskyGraphFollow', feed);
             } else {
               // TODO 他の型の処理をどうするか
               // console.debug('Not supported payload type:', payload);
