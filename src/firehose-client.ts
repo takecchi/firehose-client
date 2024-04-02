@@ -1,11 +1,11 @@
 import WebSocket from 'ws';
 import { AtpBaseClient, ComAtprotoSyncSubscribeRepos } from '@atproto/api';
 import {
+  Feed,
   Frame,
   IAppBskyFeedLike,
   IAppBskyFeedPost,
   IAppBskyFeedRepost,
-  ICommit,
   isAppBskyFeedLike,
   isAppBskyFeedPost,
   isAppBskyFeedRepost,
@@ -13,7 +13,6 @@ import {
 import { EventEmitter } from 'events';
 import { CarReader } from '@ipld/car';
 import { cborDecode, cborDecodeMulti } from './utils';
-import { CID } from 'multiformats/cid';
 
 const NSID = 'com.atproto.sync.subscribeRepos';
 const isCommit = ComAtprotoSyncSubscribeRepos.isCommit;
@@ -69,7 +68,7 @@ export class FirehoseClient extends EventEmitter {
    */
   public on(
     event: 'create:AppBskyFeedPost',
-    listener: (commit: ICommit, post: IAppBskyFeedPost) => void,
+    listener: (post: Feed<IAppBskyFeedPost>) => void,
   ): this;
 
   /**
@@ -79,7 +78,7 @@ export class FirehoseClient extends EventEmitter {
    */
   public on(
     event: 'create:AppBskyFeedRepost',
-    listener: (commit: ICommit, repost: IAppBskyFeedRepost) => void,
+    listener: (repost: Feed<IAppBskyFeedRepost>) => void,
   ): this;
 
   /**
@@ -89,7 +88,7 @@ export class FirehoseClient extends EventEmitter {
    */
   public on(
     event: 'create:AppBskyFeedLike',
-    listener: (commit: ICommit, like: IAppBskyFeedLike) => void,
+    listener: (like: Feed<IAppBskyFeedLike>) => void,
   ): this;
 
   public on(event: string | symbol, listener: (...args: any[]) => void): this {
@@ -138,7 +137,6 @@ export class FirehoseClient extends EventEmitter {
    * @private
    */
   private async handleCommit(commit: Commit) {
-    const arg: ICommit = { repo: commit.repo };
     for (const op of commit.ops) {
       if (op.action === 'create') {
         const cr = await CarReader.fromBytes(commit.blocks);
@@ -146,15 +144,18 @@ export class FirehoseClient extends EventEmitter {
           const block = await cr.get(op.cid);
           if (block) {
             const payload = cborDecode(block.bytes);
-            // CIDを追加
-            (payload as { cid: CID }).cid = op.cid;
-            (payload as { uri: string }).uri = `at://${arg.repo}/${op.path}`;
+            const feed: Feed<any> = {
+              cid: op.cid.toString(),
+              uri: `at://${commit.repo}/${op.path}`,
+              repo: commit.repo,
+              value: payload,
+            };
             if (isAppBskyFeedPost(payload)) {
-              this.emit('create:AppBskyFeedPost', arg, payload);
+              this.emit('create:AppBskyFeedPost', feed);
             } else if (isAppBskyFeedRepost(payload)) {
-              this.emit('create:AppBskyFeedRepost', arg, payload);
+              this.emit('create:AppBskyFeedRepost', feed);
             } else if (isAppBskyFeedLike(payload)) {
-              this.emit('create:AppBskyFeedLike', arg, payload);
+              this.emit('create:AppBskyFeedLike', feed);
             } else {
               // TODO 他の型の処理をどうするか
               // console.debug('Not supported payload type:', payload);

@@ -3,7 +3,6 @@ import {
   AppBskyFeedRepost,
   AppBskyFeedLike,
 } from '@atproto/api';
-import { CID } from 'multiformats/cid';
 
 enum FrameType {
   Message = 1,
@@ -13,26 +12,22 @@ enum FrameType {
 type FrameHeader = { t?: string; op: FrameType };
 export type Frame = [FrameHeader, object];
 
-export interface ICommit {
-  // The repo this event comes from.
+export type Feed<T> = {
+  uri: string;
+  cid: string;
   repo: string;
-}
+  value: T;
+};
 
 export interface IAppBskyFeedPost extends AppBskyFeedPost.Record {
-  cid: CID;
-  uri: string;
   via?: string;
 }
 
 export interface IAppBskyFeedRepost extends AppBskyFeedRepost.Record {
-  cid: CID;
-  uri: string;
   via?: string;
 }
 
 export interface IAppBskyFeedLike extends AppBskyFeedLike.Record {
-  cid: CID;
-  uri: string;
   via?: string;
 }
 
